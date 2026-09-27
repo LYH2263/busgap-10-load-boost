@@ -15,10 +15,13 @@ onMounted(async () => {
   await run()
 })
 function stripClass(s: string) {
-  return s === 'bunching' ? 'bg-bunch' : s === 'large_gap' ? 'bg-large' : ''
+  return s === 'bunching' ? 'bg-bunch' : s === 'bunching_saturated' ? 'bg-severe' : s === 'large_gap' ? 'bg-large' : ''
 }
 function label(s: string) {
-  return s === 'bunching' ? '串车' : s === 'large_gap' ? '大间隔' : '正常'
+  return s === 'bunching' ? '串车' : s === 'bunching_saturated' ? '加重串车' : s === 'large_gap' ? '大间隔' : '正常'
+}
+function badgeClass(s: string) {
+  return s === 'bunching' ? 'badge-bad' : s === 'bunching_saturated' ? 'badge-severe' : s === 'large_gap' ? 'badge-warn' : 'badge-ok'
 }
 </script>
 <template>
@@ -48,7 +51,7 @@ function label(s: string) {
           <div class="bg-gap-val">{{ e.gap_min }}′</div>
           <div>计划 {{ e.planned_headway_min }}′</div>
           <div>{{ e.earlier_trip }} → {{ e.later_trip }}</div>
-          <span class="badge" :class="e.status === 'bunching' ? 'badge-bad' : e.status === 'large_gap' ? 'badge-warn' : 'badge-ok'">
+          <span class="badge" :class="badgeClass(e.status)">
             {{ label(e.status) }}
           </span>
         </div>

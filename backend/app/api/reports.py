@@ -21,8 +21,10 @@ def run_detection(line_id: int, stop_name: str | None = None, db: Session = Depe
     trips = db.scalars(select(Trip).where(Trip.line_id == line_id)).all()
     trip_ids = [t.id for t in trips]
     trip_no_map = {t.id: t.trip_no for t in trips}
+    trip_sat_map = {t.id: t.saturated for t in trips}
     arrivals = db.scalars(select(Arrival).where(Arrival.trip_id.in_(trip_ids))).all()
-    payload = [{"stop_name": a.stop_name, "trip_no": trip_no_map[a.trip_id], "actual_arrive": a.actual_arrive}
+    payload = [{"stop_name": a.stop_name, "trip_no": trip_no_map[a.trip_id], "actual_arrive": a.actual_arrive,
+                "saturated": a.saturated or trip_sat_map[a.trip_id]}
                for a in arrivals if stop_name is None or a.stop_name == stop_name]
     events = detect_bunching(payload, line.planned_headway_min, line.bunch_threshold, line.large_threshold)
     data = events_to_dicts(events)

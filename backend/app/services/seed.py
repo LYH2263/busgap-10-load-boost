@@ -12,7 +12,8 @@ def seed_if_empty(db: Session) -> None:
     specs = [("T01", "粤A1001", 0), ("T02", "粤A1002", 2), ("T03", "粤A1003", 18), ("T04", "粤A1004", 26)]
     stops = ["起点站", "市民中心", "火车站", "终点站"]
     for trip_no, vehicle, offset in specs:
-        trip = Trip(line_id=line.id, trip_no=trip_no, planned_depart=base + timedelta(minutes=offset), vehicle_no=vehicle)
+        trip = Trip(line_id=line.id, trip_no=trip_no, planned_depart=base + timedelta(minutes=offset),
+                    vehicle_no=vehicle, saturated=(trip_no == "T02"))
         db.add(trip); db.flush()
         for seq, stop in enumerate(stops):
             arrive = base + timedelta(minutes=offset + seq * 6)

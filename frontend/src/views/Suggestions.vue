@@ -3,12 +3,21 @@ import { onMounted, ref } from 'vue'
 import { api } from '../api'
 const tips = ref<any[]>([])
 onMounted(async () => { tips.value = (await api('/reports/suggestions?line_id=1')).suggestions })
+function label(s: string) {
+  return s === 'bunching' ? '串车' : s === 'bunching_saturated' ? '加重串车' : s === 'large_gap' ? '大间隔' : '正常'
+}
+function badgeClass(s: string) {
+  return s === 'bunching' ? 'badge-bad' : s === 'bunching_saturated' ? 'badge-severe' : s === 'large_gap' ? 'badge-warn' : 'badge-ok'
+}
 </script>
 <template>
   <h1>建议</h1>
-  <p class="sub">针对串车与大间隔的调班提示</p>
+  <p class="sub">针对串车与大间隔的调班提示,满载串车优先抽稀</p>
   <div class="card" v-for="(t,i) in tips" :key="i">
-    <div><strong>{{ t.stop_name }}</strong> · {{ t.earlier_trip }} → {{ t.later_trip }} · 间隔 {{ t.gap_min }} 分</div>
+    <div>
+      <strong>{{ t.stop_name }}</strong> · {{ t.earlier_trip }} → {{ t.later_trip }} · 间隔 {{ t.gap_min }} 分
+      <span class="badge" :class="badgeClass(t.status)">{{ label(t.status) }}</span>
+    </div>
     <p class="muted">{{ t.suggestion }}</p>
   </div>
   <p v-if="!tips.length" class="muted">暂无异常建议</p>

@@ -12,9 +12,14 @@ class GapEvent:
     planned_headway_min: float
     status: str
     suggestion: str
+    saturated: bool = False
 
-def classify_gap(gap_min: float, planned_headway_min: float, bunch_threshold: float, large_threshold: float) -> tuple[str, str]:
+def classify_gap(gap_min: float, planned_headway_min: float, bunch_threshold: float, large_threshold: float,
+                 later_saturated: bool = False) -> tuple[str, str]:
     if gap_min < bunch_threshold:
+        if later_saturated:
+            return ("bunching_saturated",
+                    f"间隔 {gap_min:.1f} 分钟低于串车阈值 {bunch_threshold}，后车已载客饱和，属满载串车，建议优先抽稀。")
         return ("bunching", f"间隔 {gap_min:.1f} 分钟低于串车阈值 {bunch_threshold}，建议后车缓行或抽稀。")
     if gap_min > large_threshold:
         return ("large_gap", f"间隔 {gap_min:.1f} 分钟超过大间隔阈值 {large_threshold}，建议前车减速或加发。")
@@ -30,8 +35,11 @@ def detect_bunching(arrivals: list[dict], planned_headway_min: float, bunch_thre
         for i in range(1, len(items)):
             prev, cur = items[i - 1], items[i]
             gap_min = (cur["actual_arrive"] - prev["actual_arrive"]).total_seconds() / 60.0
-            status, suggestion = classify_gap(gap_min, planned_headway_min, bunch_threshold, large_threshold)
-            events.append(GapEvent(stop, prev["trip_no"], cur["trip_no"], round(gap_min, 2), planned_headway_min, status, suggestion))
+            saturated = bool(cur.get("saturated", False))
+            status, suggestion = classify_gap(gap_min, planned_headway_min, bunch_threshold, large_threshold,
+                                              later_saturated=saturated)
+            events.append(GapEvent(stop, prev["trip_no"], cur["trip_no"], round(gap_min, 2), planned_headway_min,
+                                   status, suggestion, saturated))
     return events
 
 def events_to_dicts(events: list[GapEvent]) -> list[dict]:
