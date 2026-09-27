@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 
 from app.api.router import api_router
 from app.config import settings
@@ -9,9 +10,28 @@ from app.database import Base, SessionLocal, engine
 from app.services.seed import seed_if_empty
 
 
+def _ensure_columns() -> None:
+    """为老库补齐后加的列（create_all 不会改已存在的表）。"""
+    inspector = inspect(engine)
+    expected = {
+        "trips": [("saturated", "BOOLEAN DEFAULT FALSE")],
+        "arrivals": [("saturated", "BOOLEAN DEFAULT FALSE")],
+    }
+    existing_tables = set(inspector.get_table_names())
+    with engine.begin() as conn:
+        for table, columns in expected.items():
+            if table not in existing_tables:
+                continue
+            present = {c["name"] for c in inspector.get_columns(table)}
+            for name, ddl in columns:
+                if name not in present:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    _ensure_columns()
     if settings.seed_on_empty:
         db = SessionLocal()
         try:

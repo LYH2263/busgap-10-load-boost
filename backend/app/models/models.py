@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -20,6 +20,8 @@ class Trip(Base):
     trip_no: Mapped[str] = mapped_column(String(32))
     planned_depart: Mapped[datetime] = mapped_column(DateTime)
     vehicle_no: Mapped[str] = mapped_column(String(32), default="")
+    # 班次级载客饱和标记：登记后该班次在所有到站都视为饱和
+    saturated: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     line: Mapped["Line"] = relationship(back_populates="trips")
     arrivals: Mapped[list["Arrival"]] = relationship(back_populates="trip")
 
@@ -30,6 +32,8 @@ class Arrival(Base):
     stop_name: Mapped[str] = mapped_column(String(64))
     stop_seq: Mapped[int] = mapped_column(Integer)
     actual_arrive: Mapped[datetime] = mapped_column(DateTime)
+    # 到站级载客饱和标记：仅该班次在本站视为饱和
+    saturated: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     trip: Mapped["Trip"] = relationship(back_populates="arrivals")
 
 class BunchReport(Base):

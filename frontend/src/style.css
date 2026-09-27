@@ -8,6 +8,7 @@
   --bg-cyan: #2ec4ff;
   --bg-amber: #ffb020;
   --bg-red: #ff4d6d;
+  --bg-crit: #ff2d78;
   --bg-ok: #3dd68c;
 }
 
@@ -132,6 +133,10 @@ h1 { margin: 0 0 0.25rem; font-size: 1.25rem; font-weight: 700; }
   min-height: 260px;
 }
 .bg-gap-strip.bg-bunch { border-top-color: var(--bg-red); }
+.bg-gap-strip.bg-bunch-sat {
+  border-top-color: var(--bg-crit);
+  box-shadow: 0 0 0 1px rgba(255,45,120,0.45), 0 0 18px rgba(255,45,120,0.25);
+}
 .bg-gap-strip.bg-large { border-top-color: var(--bg-amber); }
 .bg-gap-strip header {
   padding: 0.65rem 0.7rem 0.4rem;
@@ -163,6 +168,13 @@ th { color: var(--bg-dim); font-weight: 600; font-size: 0.78rem; }
 .badge-ok { background: rgba(61,214,140,0.18); color: var(--bg-ok); }
 .badge-warn { background: rgba(255,176,32,0.18); color: var(--bg-amber); }
 .badge-bad { background: rgba(255,77,109,0.18); color: var(--bg-red); }
+.badge-crit {
+  background: rgba(255,45,120,0.22); color: var(--bg-crit);
+  box-shadow: inset 0 0 0 1px rgba(255,45,120,0.55);
+}
+.sat-check { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
+.sat-check input { accent-color: var(--bg-crit); cursor: pointer; }
+.sat-check input:disabled { cursor: not-allowed; }
 .btn {
   background: var(--bg-cyan); color: #041018; border: none;
   padding: 0.45rem 0.95rem; font-weight: 700; cursor: pointer; font-size: 0.85rem;
